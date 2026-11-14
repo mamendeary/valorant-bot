@@ -1,26 +1,15 @@
-// Load the discord.js library.
-const discord = require("discord.js");
+// Require the necessary discord.js classes
+const { Client, Events, GatewayIntentBits } = require('discord.js');
 
-// 1. A list (array) with one item in it.
-const intentList = [discord.GatewayIntentBits.Guilds];
+// Create a new client instance
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-// 2. A settings object with one property called "intents".
-const settings = {
-    intents: intentList
-};
+// When the client is ready, run this code (only once).
+// The distinction between `client: Client<boolean>` and `readyClient: Client<true>` is important for TypeScript developers.
+// It makes some properties non-nullable.
+client.once(Events.ClientReady, (readyClient) => {
+	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+});
 
-// 3. Create the bot, handing it the settings.
-const client = new discord.Client(settings);
-
-/**
- * Runs once, when the bot has finished logging in.
- */
-function onReady(readyClient) {
-    console.log("Logged in as " + readyClient.user.tag);
-}
-
-// When the "ready" event happens, call onReady.
-client.once(discord.Events.ClientReady, onReady);
-
-// Connect to Discord using the token from the .env file.
+// Log in to Discord with your client's token
 client.login(process.env.DISCORD_TOKEN);
