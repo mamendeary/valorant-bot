@@ -1,34 +1,32 @@
 const { getAccount } = require('./accountStore');
-const { findSkinImage } = require('./skinData');
+const { getStore } = require('./valorantApi');
+const { getSkinByOfferId } = require('./skinData');
 
 async function getShop(userId) {
-	// No saved session for this user: they haven't linked yet
 	const session = getAccount(userId);
 	if (session === null) {
 		return null;
 	}
 
-	// Placeholder reset time: the next midnight UTC
-	const now = new Date();
-	const resetDate = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
+	// Fetch the real store (throws if the session expired)
+	const store = await getStore(session);
 
-	// Sample skins for now — real shop data replaces this next
-	const skins = [
-		{ name: "Gaia's Vengeance Vandal", price: 1775, tier: 'premium' },
-		{ name: 'Magepunk Ares', price: 1775, tier: 'premium' },
-		{ name: 'Convex Operator', price: 875, tier: 'select' },
-		{ name: 'Smite Judge', price: 875, tier: 'select' },
-	];
+	// Reset time: now plus however long Riot says is left
+	const resetDate = Date.now() + store.remainingSeconds * 1000;
 
-	// Look up the picture for each skin
-	for (const skin of skins) {
-		skin.image = await findSkinImage(skin.name);
+	// Turn each offer UUID into a named, priced card
+	const skins = [];
+	for (const offer of store.offers) {
+		const info = await getSkinByOfferId(offer.skinUuid);
+		skins.push({
+			name: info.name,
+			price: offer.costVp,
+			tier: info.tier,
+			image: info.image,
+		});
 	}
 
-	return {
-		resetDate: resetDate,
-		skins: skins,
-	};
+	return { resetDate: resetDate, skins: skins };
 }
 
 module.exports = { getShop };
