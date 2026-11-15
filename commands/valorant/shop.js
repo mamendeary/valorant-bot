@@ -1,11 +1,18 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, EmbedBuilder } = require('discord.js');
 const { getShop } = require('../../services/shopService');
 const emojis = require('../../config/emojis');
 
 module.exports = {
 	data: new SlashCommandBuilder().setName('shop').setDescription('Valorant Shop'),
 	async execute(interaction) {
+
 		const shop = await getShop(interaction.user.id);
+		
+		if (shop === null) {
+			await interaction.reply({ content: 'Link your Riot account first with /link.', flags: MessageFlags.Ephemeral });
+			return;
+		}
+
 		const resetSeconds = Math.floor(shop.resetDate / 1000);
 
 		// How many hours from now until the reset

@@ -1,12 +1,18 @@
+const { getAccount } = require('./accountStore');
 const { findSkinImage } = require('./skinData');
 
-// Where shop data comes from.
-// Fake for now. Later, only the inside of this function changes.
 async function getShop(userId) {
+	// No saved session for this user: they haven't linked yet
+	const session = getAccount(userId);
+	if (session === null) {
+		return null;
+	}
+
 	// Placeholder reset time: the next midnight UTC
 	const now = new Date();
 	const resetDate = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
 
+	// Sample skins for now — real shop data replaces this next
 	const skins = [
 		{ name: "Gaia's Vengeance Vandal", price: 1775, tier: 'premium' },
 		{ name: 'Magepunk Ares', price: 1775, tier: 'premium' },
