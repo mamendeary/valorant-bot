@@ -13,6 +13,8 @@ client.once(Events.ClientReady, (readyClient) => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 });
 
+// This is for command handling according to docs --START--
+
 client.commands = new Collection();
 
 const foldersPath = path.join(__dirname, 'commands');
@@ -59,6 +61,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		}
 	}
 });
+
+// This is for command handling according to docs --END--
 
 // Log in to Discord with your client's token
 client.login(process.env.DISCORD_TOKEN);
