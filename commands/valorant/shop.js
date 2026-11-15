@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { getShop } = require('../../services/shopService');
+const emojis = require('../../config/emojis');
 
 module.exports = {
 	data: new SlashCommandBuilder().setName('shop').setDescription('Valorant Shop'),
@@ -22,10 +23,14 @@ module.exports = {
 		for (const skin of shop.skins) {
 			const card = new EmbedBuilder()
 				.setColor(0x16E1D0)
-				.setAuthor({ name: 'Valorant Shop' })
+				.setAuthor({ name: 'Valorant Shop', iconURL: interaction.client.user.displayAvatarURL() })
 				.setTitle(skin.name)
-				.setDescription(`${skin.price} VP`)
+				.setDescription(`${emojis.vp} ${skin.price}`)
 				.setFooter({ text: 'Valorant Shop Bot' });
+
+			if (skin.image) {
+				card.setThumbnail(skin.image);
+			}
 
 			embeds.push(card);
 		}

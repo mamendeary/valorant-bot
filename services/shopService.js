@@ -1,3 +1,5 @@
+const { findSkinImage } = require('./skinData');
+
 // Where shop data comes from.
 // Fake for now. Later, only the inside of this function changes.
 async function getShop(userId) {
@@ -5,14 +7,21 @@ async function getShop(userId) {
 	const now = new Date();
 	const resetDate = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
 
+	const skins = [
+		{ name: "Gaia's Vengeance Vandal", price: 1775 },
+		{ name: 'Magepunk Ares', price: 1775 },
+		{ name: 'Convex Operator', price: 875 },
+		{ name: 'Smite Judge', price: 875 },
+	];
+
+	// Look up the picture for each skin
+	for (const skin of skins) {
+		skin.image = await findSkinImage(skin.name);
+	}
+
 	return {
 		resetDate: resetDate,
-		skins: [
-			{ name: "Gaia's Vengeance Vandal", price: 1775 },
-			{ name: 'Magepunk Ares', price: 1775 },
-			{ name: 'Convex Operator', price: 875 },
-			{ name: 'Smite Judge', price: 875 },
-		],
+		skins: skins,
 	};
 }
 
