@@ -24,7 +24,7 @@ module.exports = {
 			const card = new EmbedBuilder()
 				.setColor(0x16E1D0)
 				.setAuthor({ name: 'Valorant Shop', iconURL: interaction.client.user.displayAvatarURL() })
-				.setTitle(skin.name)
+				.setTitle(`${emojis[skin.tier]} ${skin.name}`)
 				.setDescription(`${emojis.vp} ${skin.price}`)
 				.setFooter({ text: 'Valorant Shop Bot' });
 

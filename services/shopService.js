@@ -8,10 +8,10 @@ async function getShop(userId) {
 	const resetDate = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
 
 	const skins = [
-		{ name: "Gaia's Vengeance Vandal", price: 1775 },
-		{ name: 'Magepunk Ares', price: 1775 },
-		{ name: 'Convex Operator', price: 875 },
-		{ name: 'Smite Judge', price: 875 },
+		{ name: "Gaia's Vengeance Vandal", price: 1775, tier: 'premium' },
+		{ name: 'Magepunk Ares', price: 1775, tier: 'premium' },
+		{ name: 'Convex Operator', price: 875, tier: 'select' },
+		{ name: 'Smite Judge', price: 875, tier: 'select' },
 	];
 
 	// Look up the picture for each skin
