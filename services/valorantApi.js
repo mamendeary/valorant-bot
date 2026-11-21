@@ -54,15 +54,29 @@ function puuidFromToken(token) {
 	return sub;
 }
 
-function shardFromToken(token) {
-	const raw = (jwtPayload(token).dat || {}).r || '';
-	const r = String(raw).toLowerCase().trim();
-	if (['na', 'na1'].includes(r)) return 'na';
-	if (['latam', 'br'].includes(r)) return 'na';
+function regionToShard(raw) {
+	const r = String(raw || '').toLowerCase().trim();
+	if (['na', 'na1', 'latam', 'br'].includes(r)) return 'na';
 	if (['eu', 'euw', 'euw1', 'eun', 'eun1', 'ru', 'tr'].includes(r)) return 'eu';
 	if (['ap', 'ap1', 'asia', 'apac', 'sea'].includes(r)) return 'ap';
 	if (['kr', 'kr1'].includes(r)) return 'kr';
-	throw new Error(`unknown region in token: ${raw}`);
+	throw new Error(`unknown region: "${raw}"`);
+}
+
+async function getShard(accessToken, idToken) {
+	// First try the region inside the token (works for some accounts).
+	const fromToken = (jwtPayload(accessToken).dat || {}).r;
+	if (fromToken) return regionToShard(fromToken);
+
+	// Otherwise ask Riot which region this account plays on.
+	const resp = await fetch('https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant', {
+		method: 'PUT',
+		headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+		body: JSON.stringify({ id_token: idToken }),
+	});
+	if (!resp.ok) throw new Error(`region lookup failed: ${resp.status}`);
+	const json = await resp.json();
+	return regionToShard((json.affinities || {}).live);
 }
 
 // ---- Entitlements token ----
@@ -129,13 +143,20 @@ async function getStorefront(accessToken, entitlements, shard, puuid, clientVers
 
 // ---- The one function the bot calls ----
 
-async function getStore(ssidCookie) {
-	const { accessToken } = await reauth(ssidCookie);
-	const entitlements = await getEntitlements(accessToken);
-	const puuid = puuidFromToken(accessToken);
-	const shard = shardFromToken(accessToken);
-	const clientVersion = await getClientVersion();
-	return getStorefront(accessToken, entitlements, shard, puuid, clientVersion);
+async function step(name, fn) {
+	try {
+		return await fn();
+	} catch (err) {
+		throw new Error(`[${name}] ${err.message}`);
+	}
 }
 
+async function getStore(ssidCookie) {
+	const { accessToken, idToken } = await step('reauth', () => reauth(ssidCookie));
+	const entitlements = await step('entitlements', () => getEntitlements(accessToken));
+	const puuid = puuidFromToken(accessToken);
+	const shard = await step('region', () => getShard(accessToken, idToken));
+	const clientVersion = await getClientVersion();
+	return step('storefront', () => getStorefront(accessToken, entitlements, shard, puuid, clientVersion));
+}
 module.exports = { getStore };
